@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>中值濾波 Median Filter｜訊號濾波互動圖鑑</title>
+  <meta name="description" content="取視窗內的中位數而不是平均，突波雜訊留不住。">
+  <link rel="stylesheet" href="../assets/css/style.css">
+</head>
+<body data-slug="median" data-root="..">
+  <header id="site-header"></header>
+
+  <main class="page">
+    <section class="hero">
+      <p class="eyebrow">非線性 · 入門</p>
+      <h1>中值濾波<span class="en">Median Filter</span></h1>
+      <p class="lead">用「中位數」取代「平均」，一兩個離譜的點完全影響不了結果。</p>
+    </section>
+
+    <section id="demo" class="demo"></section>
+
+    <section class="block" id="principle">
+      <h2>原理</h2>
+      <p>把視窗內的 N 個點排序，取正中間那一個。突波（spike）的值通常特別大或特別小，排序後會被擠到兩端，根本選不到它。</p>
+      <div class="formula">y[n] = median( x[n−k], …, x[n], …, x[n+k] ),    N = 2k + 1</div>
+      <p>舉例：視窗內是 <code>[0.9, 1.0, 5.0, 1.1, 1.0]</code>。平均是 1.8（被 5.0 拉高），中位數是 <strong>1.0</strong>（完全不受影響）。</p>
+      <p>中值濾波是<strong>非線性</strong>的：兩個訊號相加後再濾波 ≠ 各自濾波後再相加。因此它沒有頻率響應可以畫，也不能用「截止頻率」來描述。</p>
+      <div class="callout"><strong>常見誤區：</strong>中值濾波對「白雜訊」的效果其實不如移動平均。它的專長是<strong>突波</strong>，不是一般雜訊；兩種雜訊都有時，常見做法是先中值、再低通。</div>
+    </section>
+
+    <section class="block" id="params">
+      <h2>參數怎麼調</h2>
+      <table>
+        <thead><tr><th>參數</th><th>意義</th><th>調大會怎樣</th><th>建議起始值</th></tr></thead>
+        <tbody>
+          <tr><td>視窗長度 N</td><td>每次取幾個點的中位數（奇數）</td><td>能移除更寬的突波，但波峰會被削成平頂</td><td>突波寬度的 2 倍以上再加 1；單點突波用 3～7</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="block" id="tradeoffs">
+      <h2>優點與限制</h2>
+      <div class="pros-cons">
+        <div class="pros"><h3>👍 優點</h3><ul>
+          <li>對突波、脫落點（dropout）幾乎完全免疫</li>
+          <li>能保留訊號的「邊緣」（階梯狀的快速變化），不會被抹成斜坡</li>
+          <li>置中版本沒有延遲</li>
+        </ul></div>
+        <div class="cons"><h3>⚠️ 限制</h3><ul>
+          <li>需要排序，運算量比移動平均大</li>
+          <li>對高斯白雜訊的效果比線性濾波器差</li>
+          <li>視窗太大會把尖峰削成平頂，峰值數值失真</li>
+          <li>非線性，無法用頻域工具分析或設計</li>
+        </ul></div>
+      </div>
+    </section>
+
+    <section class="block" id="gait">
+      <h2>在步態訊號中的應用</h2>
+      <p>藍牙 IMU 偶爾會發生<strong>封包遺失或通訊錯誤</strong>，造成單一樣本跳到很大的值。這類錯誤用低通濾波只會被攤平成一個鼓包，用 N = 5 的中值濾波則能直接去掉。</p>
+      <p>建議的前處理順序：<strong>中值濾波（去突波）→ Butterworth 低通（去白雜訊）→ 步態事件偵測</strong>。順序反過來的話，突波會先被低通攤開，中值濾波就救不回來了。</p>
+    </section>
+
+    <section class="block" id="python">
+      <h2>Python 實作</h2>
+<pre><code>import numpy as np
+from scipy.ndimage import median_filter
+
+fs = 100
+t = np.arange(0, 6, 1 / fs)
+x = np.sin(2 * np.pi * 1.0 * t) + 0.25 * np.random.randn(t.size)
+
+# 加入幾個突波
+idx = np.random.choice(t.size, 12, replace=False)
+x[idx] += np.random.choice([-1, 1], 12) * 2.5
+
+# mode="nearest"：邊界用最靠近的值補齊
+# （demo 是在邊界縮短視窗，兩者只有頭尾幾個點不同）
+y = median_filter(x, size=7, mode="nearest")</code></pre>
+    </section>
+
+    <section class="block" id="refs">
+      <h2>延伸閱讀</h2>
+      <ul>
+        <li>SciPy 文件：<a href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.ndimage.median_filter.html">scipy.ndimage.median_filter</a></li>
+        <li>SciPy 文件：<a href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.medfilt.html">scipy.signal.medfilt</a>（邊界補 0，注意頭尾會被拉低）</li>
+        <li>Steven W. Smith, <em>The Scientist and Engineer's Guide to Digital Signal Processing</em>, Ch. 25（影像處理中的非線性濾波）</li>
+      </ul>
+    </section>
+  </main>
+
+  <footer id="site-footer"></footer>
+
+  <script src="../assets/js/registry.js"></script>
+  <script src="../assets/js/layout.js"></script>
+  <script src="../assets/js/signal.js"></script>
+  <script src="../assets/js/filters.js"></script>
+  <script src="../assets/js/plot.js"></script>
+  <script src="../assets/js/demo.js"></script>
+  <script>
+    FilterDemo.mount("#demo", {
+      filter: "median",
+      params: [
+        { key: "window", label: "視窗長度 N", type: "range", min: 1, max: 31, step: 2, value: 7, unit: "點" },
+      ],
+      signal: { noise: 0.1, spikes: true },
+      linear: false,
+      tryThis: [
+        "保持「加入突波雜訊」勾選，把 N 從 1 拉到 7，看突波一個個消失。",
+        "把 N 拉到 31，觀察波峰是不是被削成平頂。",
+        "取消突波、把白雜訊 σ 調到 0.5，比較中值濾波和移動平均頁的 RMSE。",
+      ],
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,98 @@
+<!doctype html>
+<!--
+  新頁面範本：複製到 filters/<slug>.html，替換所有 {{...}} 佔位符。
+  規則請見 CLAUDE.md 第 4～8 節。完成後執行 node scripts/check.mjs。
+-->
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{中文名稱}} {{English Name}}｜訊號濾波互動圖鑑</title>
+  <meta name="description" content="{{一句話說明}}">
+  <link rel="stylesheet" href="../assets/css/style.css">
+</head>
+<body data-slug="{{slug}}" data-root="..">
+  <header id="site-header"></header>
+
+  <main class="page">
+    <section class="hero">
+      <p class="eyebrow">{{分類}} · {{難度}}</p>
+      <h1>{{中文名稱}}<span class="en">{{English Name}}</span></h1>
+      <p class="lead">{{一句話說明，40 字以內}}</p>
+    </section>
+
+    <!-- 1. 互動 demo：保持空白，由 FilterDemo.mount() 產生 -->
+    <section id="demo" class="demo"></section>
+
+    <!-- 2. 原理 -->
+    <section class="block" id="principle">
+      <h2>原理</h2>
+      <p>{{先用一句白話說它在做什麼}}</p>
+      <div class="formula">{{公式，純文字}}</div>
+      <p>{{解釋公式中每個符號}}</p>
+    </section>
+
+    <!-- 3. 參數怎麼調 -->
+    <section class="block" id="params">
+      <h2>參數怎麼調</h2>
+      <table>
+        <thead><tr><th>參數</th><th>意義</th><th>調大會怎樣</th><th>建議起始值</th></tr></thead>
+        <tbody>
+          <tr><td>{{參數}}</td><td>{{意義}}</td><td>{{影響}}</td><td>{{數值}}</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- 4. 優點與限制 -->
+    <section class="block" id="tradeoffs">
+      <h2>優點與限制</h2>
+      <div class="pros-cons">
+        <div class="pros"><h3>👍 優點</h3><ul><li>{{}}</li><li>{{}}</li><li>{{}}</li></ul></div>
+        <div class="cons"><h3>⚠️ 限制</h3><ul><li>{{}}</li><li>{{}}</li><li>{{}}</li></ul></div>
+      </div>
+    </section>
+
+    <!-- 5. 步態訊號中的應用 -->
+    <section class="block" id="gait">
+      <h2>在步態訊號中的應用</h2>
+      <p>{{具體情境：哪種感測器、哪個訊號、建議參數}}</p>
+    </section>
+
+    <!-- 6. Python 實作 -->
+    <section class="block" id="python">
+      <h2>Python 實作</h2>
+<pre><code>{{可直接執行的 numpy / scipy 程式碼}}</code></pre>
+    </section>
+
+    <!-- 7. 延伸閱讀 -->
+    <section class="block" id="refs">
+      <h2>延伸閱讀</h2>
+      <ul>
+        <li>{{參考資料}}</li>
+      </ul>
+    </section>
+  </main>
+
+  <footer id="site-footer"></footer>
+
+  <script src="../assets/js/registry.js"></script>
+  <script src="../assets/js/layout.js"></script>
+  <script src="../assets/js/signal.js"></script>
+  <script src="../assets/js/filters.js"></script>
+  <script src="../assets/js/plot.js"></script>
+  <script src="../assets/js/demo.js"></script>
+  <script>
+    FilterDemo.mount("#demo", {
+      filter: "{{函式名稱}}",
+      params: [
+        { key: "{{key}}", label: "{{標籤}}", type: "range", min: 0, max: 1, step: 0.1, value: 0.5, unit: "" },
+      ],
+      linear: true,
+      tryThis: [
+        "{{把 A 調到 B，觀察 C}}",
+        "{{把 A 調到 B，觀察 C}}",
+      ],
+    });
+  </script>
+</body>
+</html>

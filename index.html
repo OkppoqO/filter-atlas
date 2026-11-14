@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>訊號濾波互動圖鑑｜Signal Filter Atlas</title>
+  <meta name="description" content="一種濾波器一頁，拉參數就能看到波形變化的互動教學網站，以 IMU 步態訊號為例。">
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body data-slug="home" data-root=".">
+  <header id="site-header"></header>
+
+  <main class="page">
+    <section class="home-hero">
+      <p class="eyebrow">SIGNAL FILTER ATLAS</p>
+      <h1>訊號濾波互動圖鑑</h1>
+      <p class="lead">一種濾波器一頁。不用先背公式，拉動參數、看波形怎麼變，再回頭理解原理。
+        所有範例都用同一段合成的<strong>步態角速度訊號</strong>（fs = 100 Hz），方便橫向比較。</p>
+    </section>
+
+    <div class="chips" id="chips" role="tablist" aria-label="依分類篩選"></div>
+    <div class="cards" id="cards"></div>
+
+    <section class="block">
+      <h2>每一頁都長這樣</h2>
+      <p>所有濾波器頁面使用同一套結構，讀完一頁就知道其他頁的東西在哪裡：</p>
+      <table>
+        <thead><tr><th>#</th><th>區塊</th><th>你會得到什麼</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td>互動 demo</td><td>拉參數，即時看波形、誤差（RMSE）、延遲與頻率響應</td></tr>
+          <tr><td>2</td><td>原理</td><td>先白話、再公式</td></tr>
+          <tr><td>3</td><td>參數怎麼調</td><td>每個參數調大會怎樣、建議起始值</td></tr>
+          <tr><td>4</td><td>優點與限制</td><td>什麼時候該用、什麼時候不該用</td></tr>
+          <tr><td>5</td><td>步態訊號中的應用</td><td>IMU / 步態分析的實際使用情境</td></tr>
+          <tr><td>6</td><td>Python 實作</td><td>可直接複製執行的 NumPy / SciPy 程式碼</td></tr>
+          <tr><td>7</td><td>延伸閱讀</td><td>官方文件與教科書章節</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="block">
+      <h2>這個網站是怎麼「長」出來的</h2>
+      <p>本站的規則寫在 repository 裡的 <code>CLAUDE.md</code>。AI 讀完它就知道要怎麼新增下一個濾波器：</p>
+      <ol class="steps">
+        <li>在 <code>assets/js/filters.js</code> 寫演算法（固定的函式簽名）</li>
+        <li>在 <code>assets/js/registry.js</code> 註冊頁面 → 首頁卡片、導覽列、上一頁/下一頁自動出現</li>
+        <li>複製 <code>templates/filter-page.html</code>，依固定的 7 個區塊填內容</li>
+        <li>執行 <code>node scripts/check.mjs</code> 自動檢查是否符合規則</li>
+      </ol>
+      <p>在 Claude Code 裡只要輸入 <code>/new-filter Savitzky-Golay 濾波</code> 就會照這個流程跑一遍。</p>
+    </section>
+  </main>
+
+  <footer id="site-footer"></footer>
+
+  <script src="assets/js/registry.js"></script>
+  <script src="assets/js/layout.js"></script>
+  <script src="assets/js/signal.js"></script>
+  <script src="assets/js/filters.js"></script>
+  <script src="assets/js/plot.js"></script>
+  <script src="assets/js/demo.js"></script>
+  <script>
+    (function () {
+      const cards = document.getElementById("cards");
+      const chips = document.getElementById("chips");
+      let current = "all";
+
+      const cats = [["all", "全部"]].concat(
+        Object.entries(CATEGORIES)
+          .filter(([k]) => FILTERS.some((f) => f.category === k))
+          .map(([k, v]) => [k, v.label])
+      );
+      cats.forEach(([key, label]) => {
+        const b = document.createElement("button");
+        b.className = "chip" + (key === current ? " active" : "");
+        b.type = "button";
+        b.textContent = label;
+        b.addEventListener("click", () => {
+          current = key;
+          chips.querySelectorAll(".chip").forEach((c) => c.classList.toggle("active", c === b));
+          render();
+        });
+        chips.appendChild(b);
+      });
+
+      function render() {
+        cards.innerHTML = "";
+        FILTERS.filter((f) => current === "all" || f.category === current).forEach((f) => {
+          const c = CATEGORIES[f.category];
+          const a = document.createElement("a");
+          a.className = "card";
+          a.href = "filters/" + f.slug + ".html";
+          a.style.setProperty("--card-color", c.color);
+          a.innerHTML =
+            '<span class="meta">' + c.label + " · " + LEVELS[f.level] + "</span>" +
+            "<h3>" + f.title + "</h3>" +
+            '<span class="en">' + f.en + "</span>" +
+            "<p>" + f.summary + "</p>" +
+            '<canvas aria-hidden="true"></canvas>';
+          cards.appendChild(a);
+          FilterDemo.preview(a.querySelector("canvas"), f.preview.filter, f.preview.params);
+        });
+      }
+      render();
+      window.addEventListener("resize", render);
+    })();
+  </script>
+</body>
+</html>
