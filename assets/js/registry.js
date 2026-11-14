@@ -9,7 +9,7 @@ window.SITE = {
   title: "訊號濾波互動圖鑑",
   subtitle: "Signal Filter Atlas",
   // 上傳 GitHub 後，把下面網址改成你自己的 repository
-  repo: "https://github.com/YOUR-ACCOUNT/filter-atlas",
+  repo: "https://github.com/OkppoqO/filter-atlas",
 };
 
 window.CATEGORIES = {
